@@ -14,3 +14,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 #add the executable
 
 add_library(directX_renderer SHARED directX_renderer.cxx)
+
+add_executable(tester test.cxx)
+
+#add library linkage to tester
+target_link_libraries(tester directX_renderer)
