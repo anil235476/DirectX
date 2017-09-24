@@ -16,12 +16,13 @@ bool render_interface::create_device(HWND wnd) {
 	auto result = D3D11CreateDeviceAndSwapChain(
 		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
 		nullptr, 0, D3D11_SDK_VERSION,
-		&swapChainDesc, &m_swapChain,
-		&m_device, nullptr, &m_deviceContext);
+		&swapChainDesc, &swap_chain_,
+		&device_, nullptr, &device_context_);
 
 	// Check for error
 	if (result != S_OK) {
 		MessageBox(nullptr, "Error creating DX11", "Error", MB_OK);
+		assert(false);
 		exit(0);
 	}
 
@@ -29,19 +30,29 @@ bool render_interface::create_device(HWND wnd) {
 }
 
 bool render_interface::create_render_target() {
+	assert(swap_chain_);
 	ID3D11Texture2D* backBuffer;
-	m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
-	m_device->CreateRenderTargetView(backBuffer, nullptr, &m_renderTargetView);;
+	{
+		const auto hr = swap_chain_->GetBuffer(
+			0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+		assert(!FAILED(hr));
+	}
+	{
+		const auto hr = device_->CreateRenderTargetView(
+			backBuffer, nullptr, &render_target_view_);
+		assert(!FAILED(hr));
+	}
+	
 	backBuffer->Release();
 
-	return m_renderTargetView != nullptr;
+	return render_target_view_ != nullptr;
 }
 
 void render_interface::upate() {
 	// Set the background color
-	assert(m_deviceContext);
+	assert(device_context_);
 	float clearColor[] = { .25f, .5f, 1, 1 };
-	m_deviceContext->ClearRenderTargetView(m_renderTargetView, clearColor);
+	device_context_->ClearRenderTargetView(render_target_view_, clearColor);
 
-	m_swapChain->Present(1, 0);
+	swap_chain_->Present(1, 0);
 }

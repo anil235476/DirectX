@@ -11,13 +11,13 @@ public:
 	void upate();
 private:
 	// Device stuff
-	IDXGISwapChain* m_swapChain = nullptr;
-	ID3D11Device* m_device = nullptr;
-	ID3D11DeviceContext* m_deviceContext = nullptr;
+	IDXGISwapChain* swap_chain_{ nullptr };
+	ID3D11Device* device_{ nullptr };
+	ID3D11DeviceContext* device_context_{ nullptr };
 
 	//render target
 	// Render target
-	ID3D11RenderTargetView* m_renderTargetView = nullptr;
+	ID3D11RenderTargetView* render_target_view_{ nullptr };
 };
 
 
