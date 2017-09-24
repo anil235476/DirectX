@@ -1,0 +1,2 @@
+(1) make a test .exe application which can load the dll and call the export function
+(2) try to add google test in through cmake
