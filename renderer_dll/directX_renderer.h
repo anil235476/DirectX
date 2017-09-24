@@ -1,7 +1,10 @@
 #ifndef _DIRECT_X_RENDERER_H_
 #define _DIRECT_X_RENDERER_H_
 
+
 #if defined (_WIN32) 
+#include <Windows.h>
+
 #if defined(directX_renderer_EXPORTS)
 #define  RENDERER_EXPORT __declspec(dllexport)
 #else
@@ -13,5 +16,8 @@
 
 RENDERER_EXPORT
 bool test_init();
+
+RENDERER_EXPORT
+bool test_renderer(HWND wnd);
 
 #endif//_DIRECT_X_RENDERER_H_

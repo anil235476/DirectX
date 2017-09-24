@@ -4,13 +4,15 @@
 
 class render_interface {
 public:
-	render_interface() {
+	render_interface():render_interface{nullptr}{}
+
+	render_interface(HWND wnd) {
 		// Define our swap chain
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0 };
 		swapChainDesc.BufferCount = 1;
 		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.OutputWindow = nullptr;
+		swapChainDesc.OutputWindow = wnd;
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.Windowed = true;
 
@@ -37,5 +39,10 @@ private:
 
 bool test_init() {
 	render_interface a{};
+	return true;
+}
+
+bool test_renderer(HWND wnd) {
+	render_interface a{ wnd };
 	return true;
 }
