@@ -2,6 +2,7 @@
 #define _RENDER_INTERFACE_H__
 #include <Windows.h>
 #include <d3d11.h>
+#include "utility/release_helper.h"
 
 class render_interface {
 public:
@@ -11,13 +12,12 @@ public:
 	void upate();
 private:
 	// Device stuff
-	IDXGISwapChain* swap_chain_{ nullptr };
-	ID3D11Device* device_{ nullptr };
-	ID3D11DeviceContext* device_context_{ nullptr };
-
+	util::release_helper<IDXGISwapChain> swap_chain_;
+	util::release_helper<ID3D11Device> device_;
+	util::release_helper<ID3D11DeviceContext> device_context_;
 	//render target
 	// Render target
-	ID3D11RenderTargetView* render_target_view_{ nullptr };
+	util::release_helper<ID3D11RenderTargetView> render_target_view_;
 };
 
 

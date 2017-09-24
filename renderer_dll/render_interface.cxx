@@ -16,8 +16,8 @@ bool render_interface::create_device(HWND wnd) {
 	auto result = D3D11CreateDeviceAndSwapChain(
 		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
 		nullptr, 0, D3D11_SDK_VERSION,
-		&swapChainDesc, &swap_chain_,
-		&device_, nullptr, &device_context_);
+		&swapChainDesc, swap_chain_.ref(),
+		device_.ref(), nullptr, device_context_.ref());
 
 	// Check for error
 	if (result != S_OK) {
@@ -39,20 +39,20 @@ bool render_interface::create_render_target() {
 	}
 	{
 		const auto hr = device_->CreateRenderTargetView(
-			backBuffer, nullptr, &render_target_view_);
+			backBuffer, nullptr, render_target_view_.ref());
 		assert(!FAILED(hr));
 	}
 	
 	backBuffer->Release();
 
-	return render_target_view_ != nullptr;
+	return render_target_view_.get() != nullptr;
 }
 
 void render_interface::upate() {
 	// Set the background color
 	assert(device_context_);
 	float clearColor[] = { .25f, .5f, 1, 1 };
-	device_context_->ClearRenderTargetView(render_target_view_, clearColor);
+	device_context_->ClearRenderTargetView(render_target_view_.get(), clearColor);
 
 	swap_chain_->Present(1, 0);
 }
