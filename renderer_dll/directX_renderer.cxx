@@ -1,48 +1,24 @@
 #include "directX_renderer.h"
 #include <cassert>
-#include <d3d11.h>
+#include "render_interface.h"
 
-class render_interface {
-public:
-	render_interface():render_interface{nullptr}{}
+render_interface* get_renderer_handle() {
+	static render_interface render{};
+	return &render;
+}
 
-	render_interface(HWND wnd) {
-		// Define our swap chain
-		DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0 };
-		swapChainDesc.BufferCount = 1;
-		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.OutputWindow = wnd;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.Windowed = true;
-
-		// Device stuff
-		IDXGISwapChain* m_swapChain = nullptr;
-		ID3D11Device* m_device = nullptr;
-		ID3D11DeviceContext* m_deviceContext = nullptr;
-		// Create the swap chain, device and device context
-		auto result = D3D11CreateDeviceAndSwapChain(
-			nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
-			nullptr, 0, D3D11_SDK_VERSION,
-			&swapChainDesc, &m_swapChain,
-			&m_device, nullptr, &m_deviceContext);
-
-		// Check for error
-		if (result != S_OK) {
-			MessageBox(nullptr, "Error creating DX11", "Error", MB_OK);
-			exit(0);
-		}
-	}
-private:
-
-};
 
 bool test_init() {
-	render_interface a{};
-	return true;
+	auto p = get_renderer_handle();
+	return p != nullptr;
 }
 
 bool test_renderer(HWND wnd) {
-	render_interface a{ wnd };
-	return true;
+	auto p = get_renderer_handle();
+	return p->create_device(wnd);
+}
+
+void update() {
+	auto p = get_renderer_handle();
+	p->upate();
 }

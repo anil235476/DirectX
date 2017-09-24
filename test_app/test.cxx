@@ -12,7 +12,22 @@ int main() {
 	auto r = wnd.create_window( 800, 600 );
 	//assert(r);
 	auto const b = test_renderer(wnd.get_handle());
-	int i;
-	cin >> i;
+
+
+	MSG msg = { 0 };
+	while (true) {
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+
+			if (msg.message == WM_QUIT) {
+				break;
+			}
+			update();
+		}
+
+		
+	}
+
 	cout << "test return from dll = " << b << endl;
 }

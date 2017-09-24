@@ -20,4 +20,7 @@ bool test_init();
 RENDERER_EXPORT
 bool test_renderer(HWND wnd);
 
+RENDERER_EXPORT
+void update();
+
 #endif//_DIRECT_X_RENDERER_H_
