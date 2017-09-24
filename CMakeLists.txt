@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 8.8)
+cmake_minimum_required (VERSION 3.2)
 project (DirectX_Renderer)
 
 
@@ -8,6 +8,9 @@ project (DirectX_Renderer)
 
 include_directories("${PROJECT_BINARY_DIR}")
 
+#adding definition
+#add_definitions(-DTEST)
+
 #add the executable
 
-add_library(directX_renderer directX_renderer.cxx)
+add_library(directX_renderer SHARED directX_renderer.cxx)
