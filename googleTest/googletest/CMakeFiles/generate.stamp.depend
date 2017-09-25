@@ -1,0 +1,13 @@
+# CMake generation dependency list for this directory.
+D:/PRogramming/directX/GitHub/DirectX/googleTest/googletest/CMakeLists.txt
+D:/PRogramming/directX/GitHub/DirectX/googleTest/googletest/cmake/internal_utils.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindPythonInterp.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindPackageMessage.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindThreads.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/CheckLibraryExists.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/CheckSymbolExists.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/CheckIncludeFile.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/CheckIncludeFile.c.in
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+C:/Users/anil/scoop/apps/cmake/current/share/cmake-3.8/Modules/FindPackageMessage.cmake
