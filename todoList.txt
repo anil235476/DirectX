@@ -1,5 +1,8 @@
 (1) make a test .exe application which can load the dll and call the export function-->done
 (2) segregate modules related source files in project hierarchy. -> done
-(3) try to add google test in through cmake ->>
+(3) try to add google test in through cmake ->>done, but require more understanding of command
+	https://github.com/dmonopoly/gtest-cmake-example
+
 (4) add support to specify machine (x86 or x64). --> done 
      {cmake .\ -G "Visual Studio 14 2015 Win64"} when running cmake command to generate solution file
+(5) 
