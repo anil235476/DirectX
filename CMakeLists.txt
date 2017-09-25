@@ -5,10 +5,15 @@ project (renderer)
 
 #subdirs(renderer_dll test_app window_module)
 
-subdirs(renderer_dll test_app)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/)
+
+
+#subdirs(renderer_dll test_app)
+add_subdirectory(renderer_dll)
+add_subdirectory(test_app)
+
+
 
 #add the binary tree to the search path for include files
 #so that we will find tutorialConfig.h

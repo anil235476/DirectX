@@ -1,5 +1,5 @@
 #include "test.h"
-#include "directX_renderer.h"
+#include "renderer_dll/directX_renderer.h"
 #include <iostream>
 #include "window_module/window_module.h"
 #include <cassert>
