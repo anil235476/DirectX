@@ -1,7 +1,11 @@
 cmake_minimum_required (VERSION 3.2)
 
+# Options. Turn on with 'cmake -Dmyvarname=ON'.
+option(test "Build all tests." OFF) # Makes boolean 'test' available.
+
 #project name 
 project (renderer)
+
 
 #subdirs(renderer_dll test_app window_module)
 
@@ -9,9 +13,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/)
 
 
+if (test)
+# This adds another subdirectory, which has 'project(gtest)'.
+  add_subdirectory(googleTest/googletest)
+endif()
+
 #subdirs(renderer_dll test_app)
 add_subdirectory(renderer_dll)
 add_subdirectory(test_app)
+add_subdirectory(runUnitTest)
 
 
 
