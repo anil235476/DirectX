@@ -6,4 +6,4 @@
 
 (4) add support to specify machine (x86 or x64). --> done 
      {cmake .\ -G "Visual Studio 14 2015 Win64"} when running cmake command to generate solution file
-(5) 
+(5) Read about the apis used in supporting google test in CMakeLists.txt
