@@ -1,11 +1,13 @@
 #include "directX_renderer.h"
 #include <cassert>
 #include "dx_interface_imp.h"
+#include "dx11_interface_imp.h"
 
 using namespace renderer;
 
 render_interface* get_renderer_handle() {
-	static dx_interface_imp render{};
+	//static dx_interface_imp render{};
+	static dx11_interface_imp render{};
 	return &render;
 }
 

@@ -3,7 +3,6 @@
 #include "render_interface.h"//for base class definition
 #include <d3d11.h>
 #include "utility/release_helper.h"
-#include <dxgi1_2.h>
 
 namespace renderer
 {
@@ -19,7 +18,7 @@ namespace renderer
 		void end_frame();
 		// Device stuff
 		util::release_helper<IDXGISwapChain> swap_chain_;
-		util::release_helper<IDXGISwapChain1> swap_chain1_;
+		
 		util::release_helper<ID3D11Device> device_;
 		util::release_helper<ID3D11DeviceContext> device_context_;
 		//render target

@@ -8,5 +8,5 @@ T add(const T& a, const T& b) {
 }
 
 TEST(test_add, addition) {
-	EXPECT_TRUE(6, add(3, 3));
+	EXPECT_EQ(6, add(3, 3));
 }

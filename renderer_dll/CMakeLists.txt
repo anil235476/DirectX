@@ -9,11 +9,16 @@ set(dll_src
 	render_interface.cxx
 	dx_interface_imp.h
 	dx_interface_imp.cxx
+	dx11_interface_imp.h
+	dx11_interface_imp.cxx
 )
 
 add_library(directX_renderer SHARED 
 	${dll_src}
 )
 
-target_link_libraries(directX_renderer d3d11)
+target_link_libraries(directX_renderer 
+	d3d11
+	DXGI
+	)
 
