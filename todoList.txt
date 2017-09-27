@@ -13,3 +13,6 @@
 	https://github.com/google/googletest/tree/master/googletest#incorporating-into-an-existing-cmake-project
 (7) look for directX support related to rectangle
 (8) know about flip model of swap chain.  "flip presentation model swap chain"
+(9) implement How To: Check for Driver Support
+     from https://msdn.microsoft.com/en-us/library/windows/desktop/ff476893(v=vs.85).aspx
+	 
