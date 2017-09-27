@@ -6,9 +6,10 @@
 
 (4) add support to specify machine (x86 or x64). --> done 
      {cmake .\ -G "Visual Studio 14 2015 Win64"} when running cmake command to generate solution file
-(5) Read about the apis used in supporting google test in CMakeLists.txt
+(5) Read about the apis used in supporting google test in CMakeLists.txt --> done
 (6) read following links:-
 	https://crascit.com/2015/07/25/cmake-gtest/
 	https://github.com/Crascit/DownloadProject
 	https://github.com/google/googletest/tree/master/googletest#incorporating-into-an-existing-cmake-project
-	
+(7) look for directX support related to rectangle
+(8) know about flip model of swap chain.  "flip presentation model swap chain"

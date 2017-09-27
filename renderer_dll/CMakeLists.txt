@@ -7,6 +7,8 @@ set(dll_src
 	directX_renderer.cxx
 	render_interface.h
 	render_interface.cxx
+	dx_interface_imp.h
+	dx_interface_imp.cxx
 )
 
 add_library(directX_renderer SHARED 

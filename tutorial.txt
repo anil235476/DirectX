@@ -1,0 +1,9 @@
+Direct3D 11.1
+   supports IDXGISwapChain1 which in turn support presentation on dirty rectangles.
+   
+Creating IDXGISwapChain1:-
+     three methods:- 
+	  A. CreateSwapChainForHwnd(HWND can not be null)
+	  B. CreateSwapChainForCoreWindow
+	  C. CreateSwapChainForCompostioin
+	  
