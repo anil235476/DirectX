@@ -12,16 +12,20 @@ namespace renderer {
 		bool initialize(HWND wnd) override;
 		void update() override;
 	private:
+		bool create_device();
+		bool create_swap_chain2(HWND wnd);
+		bool create_swap_chain1();
 		bool create_render_target();
 		void begin_frame();
 		void end_frame();
-		util::release_helper<IDXGISwapChain> swap_chain_;
-		util::release_helper<IDXGISwapChain1> swap_chain1_;
-		util::release_helper<IDXGIFactory2> dxgiFactory2;
+	
+		//device related
 		util::release_helper<ID3D11Device> pd3dDevice;
 		util::release_helper<ID3D11DeviceContext> pImmediateContext;
+		
 		//render target
-		// Render target
+		util::release_helper<IDXGISwapChain> swap_chain_;
+		util::release_helper<IDXGISwapChain1> swap_chain1_;
 		util::release_helper<ID3D11RenderTargetView> render_target_view_;
 	};
 

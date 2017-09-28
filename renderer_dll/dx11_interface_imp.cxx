@@ -2,22 +2,47 @@
 #include <cassert>
 #include <Dxgi1_3.h>
 
+struct dxgi_factory2_handler
+{
+	dxgi_factory2_handler();
+	IDXGIFactory2* operator->() {
+		return dxgiFactory2.get();
+	}
+	util::release_helper<IDXGIFactory2> dxgiFactory2;
+};
 
+dxgi_factory2_handler::dxgi_factory2_handler() {
+#ifdef _DEBUG
+	const int flag = DXGI_CREATE_FACTORY_DEBUG;
+#else
+	const int flag = 0;
+#endif
+	const HRESULT hr = CreateDXGIFactory2(
+		flag,
+		__uuidof(IDXGIFactory2),
+		(void**)dxgiFactory2.ref());
+	assert(SUCCEEDED(hr));
+}
 
 namespace renderer {
+	using namespace util;
 
 	dx11_interface_imp::dx11_interface_imp() {
-#ifdef _DEBUG
-		const int flag = DXGI_CREATE_FACTORY_DEBUG;
-#else
-		const int flag = 0;
-#endif
-		const HRESULT hr = CreateDXGIFactory2(
-			flag,
-			__uuidof(IDXGIFactory2),
-			(void**)dxgiFactory2.ref());
-		assert(!FAILED(hr));
-		
+		const auto r = create_device();
+		assert(r);
+	}
+
+	bool dx11_interface_imp::initialize(HWND wnd) {
+		if (create_swap_chain2(wnd)) {
+			if (create_swap_chain1()) {
+				const auto r = create_render_target();
+				return r;
+			}
+		}
+		return false;
+	}
+
+	bool dx11_interface_imp::create_device() {
 		UINT createDeviceFlags = 0;
 #ifdef _DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -39,48 +64,47 @@ namespace renderer {
 			D3D_FEATURE_LEVEL_10_0,
 		};
 		const UINT numFeatureLevels = ARRAYSIZE(featureLevels);
-		
+
 		D3D_FEATURE_LEVEL  g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-		
-		for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
-		{
+
+		for (UINT driverTypeIndex = 0;
+			driverTypeIndex < numDriverTypes; driverTypeIndex++) {
 			D3D_DRIVER_TYPE driverType = driverTypes[driverTypeIndex];
 			auto hr = D3D11CreateDevice(
-				nullptr, 
+				nullptr,
 				driverType,
-				nullptr, 
-				createDeviceFlags, 
-				featureLevels, 
+				nullptr,
+				createDeviceFlags,
+				featureLevels,
 				numFeatureLevels,
-				D3D11_SDK_VERSION, 
+				D3D11_SDK_VERSION,
 				pd3dDevice.ref(),
 				&g_featureLevel,
 				pImmediateContext.ref()
 			);
 
-			if (hr == E_INVALIDARG)
-			{
+			if (hr == E_INVALIDARG) {
 				// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 				hr = D3D11CreateDevice(
 					nullptr,
-					driverType, 
+					driverType,
 					nullptr, createDeviceFlags,
-					&featureLevels[1], 
+					&featureLevels[1],
 					numFeatureLevels - 1,
 					D3D11_SDK_VERSION,
 					pd3dDevice.ref(),
-					&g_featureLevel, 
+					&g_featureLevel,
 					pImmediateContext.ref()
 				);
 			}
 
 			if (SUCCEEDED(hr))
-				break;
+				return true;
 		}
-
+		return false;
 	}
 
-	bool dx11_interface_imp::initialize(HWND wnd) {
+	bool dx11_interface_imp::create_swap_chain2(HWND wnd) {
 		assert(pd3dDevice);
 		RECT rc;
 		auto const r = GetClientRect(wnd, &rc);
@@ -97,43 +121,46 @@ namespace renderer {
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
-		assert(dxgiFactory2);
-		auto hr = dxgiFactory2->CreateSwapChainForHwnd(
+		dxgi_factory2_handler dxg_factory;
+		
+		auto hr = dxg_factory->CreateSwapChainForHwnd(
 			pd3dDevice.get(),
-			wnd, 
+			wnd,
 			&sd,
-			nullptr, 
-			nullptr, 
+			nullptr,
+			nullptr,
 			swap_chain1_.ref()
 		);
-		
-
-		//dxgiFactory2->Release();
 		return hr == S_OK;
 	}
 
+	bool dx11_interface_imp::create_swap_chain1() {
+		assert(swap_chain1_);
+		assert(!swap_chain_);
+		const auto hr = swap_chain1_->QueryInterface(
+			__uuidof(IDXGISwapChain),
+			reinterpret_cast<void**>(swap_chain_.ref())
+		);
+		return hr == S_OK;
+	}
 
 	bool dx11_interface_imp::create_render_target() {
+		assert(pd3dDevice);
 		assert(swap_chain_);
-		util::release_helper
-			<
-			ID3D11Texture2D
-			>
-			backBuffer;
+		assert(!render_target_view_);
+		release_helper<ID3D11Texture2D> backBuffer;
 		{
 			const auto hr = swap_chain_->GetBuffer(
-				0,
-				__uuidof(ID3D11Texture2D),
+				0, __uuidof(ID3D11Texture2D),
 				reinterpret_cast<void**>(backBuffer.ref())
 			);
-			assert(!FAILED(hr));
+			assert(SUCCEEDED(hr));
 		}
 		{
 			const auto hr = pd3dDevice->CreateRenderTargetView(
 				backBuffer.get(), nullptr, render_target_view_.ref());
-			assert(!FAILED(hr));
+			assert(SUCCEEDED(hr));
 		}
-
 		return render_target_view_.get() != nullptr;
 	}
 
@@ -145,8 +172,10 @@ namespace renderer {
 	void dx11_interface_imp::begin_frame() {
 		// Set the background color
 		assert(pImmediateContext);
-		float clearColor[] = { .25f, .5f, 1, 1 };
-		pImmediateContext->ClearRenderTargetView(render_target_view_.get(), clearColor);
+		assert(render_target_view_);
+		const float clearColor[] = { .25f, .5f, 1, 1 };
+		pImmediateContext->ClearRenderTargetView(
+			render_target_view_.get(), clearColor);
 	}
 
 	void dx11_interface_imp::end_frame() {
