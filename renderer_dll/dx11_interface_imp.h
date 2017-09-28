@@ -11,11 +11,13 @@ namespace renderer {
 		dx11_interface_imp();
 		bool initialize(HWND wnd) override;
 		void update() override;
+
 	private:
 		bool create_device();
 		bool create_swap_chain2(HWND wnd);
 		bool create_swap_chain1();
 		bool create_render_target();
+
 		void begin_frame();
 		void end_frame();
 	

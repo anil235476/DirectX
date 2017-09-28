@@ -1,6 +1,10 @@
 #include "dx11_interface_imp.h"
 #include <cassert>
 #include <Dxgi1_3.h>
+#include <array>
+#include <tuple>
+
+using namespace std;
 
 struct dxgi_factory2_handler
 {
@@ -10,6 +14,33 @@ struct dxgi_factory2_handler
 	}
 	util::release_helper<IDXGIFactory2> dxgiFactory2;
 };
+
+namespace {
+	constexpr array<D3D_DRIVER_TYPE, 3> driverTypes{
+		D3D_DRIVER_TYPE_HARDWARE,
+		D3D_DRIVER_TYPE_WARP,
+		D3D_DRIVER_TYPE_REFERENCE,
+	};
+	constexpr array<D3D_FEATURE_LEVEL, 4>featureLevels{
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+	};
+	struct dimension
+	{
+		const UINT width;
+		const UINT height;
+	};
+	dimension get_width_height(HWND wnd) {
+		RECT rc;
+		auto const r = GetClientRect(wnd, &rc);
+		assert(r);
+		const UINT width = rc.right - rc.left;
+		const UINT height = rc.bottom - rc.top;
+		return{ width, height };
+	}
+};//anonymous namespace
 
 dxgi_factory2_handler::dxgi_factory2_handler() {
 #ifdef _DEBUG
@@ -36,64 +67,48 @@ namespace renderer {
 		if (create_swap_chain2(wnd)) {
 			if (create_swap_chain1()) {
 				const auto r = create_render_target();
+				assert(r);
 				return r;
 			}
 		}
+		assert(false);
 		return false;
 	}
 
 	bool dx11_interface_imp::create_device() {
-		UINT createDeviceFlags = 0;
+		
+		for (const auto& driverType : driverTypes) {
+		
+			UINT createDeviceFlags = 0;
 #ifdef _DEBUG
-		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+			createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
-		D3D_DRIVER_TYPE driverTypes[] =
-		{
-			D3D_DRIVER_TYPE_HARDWARE,
-			D3D_DRIVER_TYPE_WARP,
-			D3D_DRIVER_TYPE_REFERENCE,
-		};
-		UINT numDriverTypes = ARRAYSIZE(driverTypes);
-
-		D3D_FEATURE_LEVEL featureLevels[] =
-		{
-			D3D_FEATURE_LEVEL_11_1,
-			D3D_FEATURE_LEVEL_11_0,
-			D3D_FEATURE_LEVEL_10_1,
-			D3D_FEATURE_LEVEL_10_0,
-		};
-		const UINT numFeatureLevels = ARRAYSIZE(featureLevels);
-
-		D3D_FEATURE_LEVEL  g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-
-		for (UINT driverTypeIndex = 0;
-			driverTypeIndex < numDriverTypes; driverTypeIndex++) {
-			D3D_DRIVER_TYPE driverType = driverTypes[driverTypeIndex];
+			D3D_FEATURE_LEVEL featureLevel{ D3D_FEATURE_LEVEL_11_0 };
 			auto hr = D3D11CreateDevice(
 				nullptr,
 				driverType,
 				nullptr,
 				createDeviceFlags,
-				featureLevels,
-				numFeatureLevels,
+				&featureLevels[0],
+				static_cast<UINT>(featureLevels.size()),
 				D3D11_SDK_VERSION,
 				pd3dDevice.ref(),
-				&g_featureLevel,
+				&featureLevel,
 				pImmediateContext.ref()
 			);
 
 			if (hr == E_INVALIDARG) {
-				// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
+				// DirectX 11.0 platforms will not recognize 
+				//D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 				hr = D3D11CreateDevice(
 					nullptr,
 					driverType,
 					nullptr, createDeviceFlags,
 					&featureLevels[1],
-					numFeatureLevels - 1,
+					static_cast<UINT>(featureLevels.size() - 1),
 					D3D11_SDK_VERSION,
 					pd3dDevice.ref(),
-					&g_featureLevel,
+					&featureLevel,
 					pImmediateContext.ref()
 				);
 			}
@@ -106,15 +121,12 @@ namespace renderer {
 
 	bool dx11_interface_imp::create_swap_chain2(HWND wnd) {
 		assert(pd3dDevice);
-		RECT rc;
-		auto const r = GetClientRect(wnd, &rc);
-		assert(r);
-		const UINT width = rc.right - rc.left;
-		const UINT height = rc.bottom - rc.top;
+		
+		const auto width_height = get_width_height(wnd);
 		DXGI_SWAP_CHAIN_DESC1 sd;
 		ZeroMemory(&sd, sizeof(sd));
-		sd.Width = width;
-		sd.Height = height;
+		sd.Width = width_height.width;
+		sd.Height = width_height.height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count = 1;
 		sd.SampleDesc.Quality = 0;
@@ -131,6 +143,7 @@ namespace renderer {
 			nullptr,
 			swap_chain1_.ref()
 		);
+
 		return hr == S_OK;
 	}
 
