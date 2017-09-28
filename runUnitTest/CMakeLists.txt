@@ -39,7 +39,10 @@ if (test)
   ##############
   # Unit Tests
   ##############
-  add_executable(runUnitTests test_project1.cpp)
+  add_executable(runUnitTests 
+  test_project1.cpp
+  ${renderer_SOURCE_DIR}/utility/array_helper.h
+  )
 
   # Standard linking to gtest stuff.
   target_link_libraries(runUnitTests gtest gtest_main)

@@ -3,8 +3,10 @@
 #include <Dxgi1_3.h>
 #include <array>
 #include <tuple>
+#include "utility/array_helper.h"
 
 using namespace std;
+using namespace experiment;
 
 struct dxgi_factory2_handler
 {
@@ -14,33 +16,6 @@ struct dxgi_factory2_handler
 	}
 	util::release_helper<IDXGIFactory2> dxgiFactory2;
 };
-
-namespace {
-	constexpr array<D3D_DRIVER_TYPE, 3> driverTypes{
-		D3D_DRIVER_TYPE_HARDWARE,
-		D3D_DRIVER_TYPE_WARP,
-		D3D_DRIVER_TYPE_REFERENCE,
-	};
-	constexpr array<D3D_FEATURE_LEVEL, 4>featureLevels{
-		D3D_FEATURE_LEVEL_11_1,
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-	};
-	struct dimension
-	{
-		const UINT width;
-		const UINT height;
-	};
-	dimension get_width_height(HWND wnd) {
-		RECT rc;
-		auto const r = GetClientRect(wnd, &rc);
-		assert(r);
-		const UINT width = rc.right - rc.left;
-		const UINT height = rc.bottom - rc.top;
-		return{ width, height };
-	}
-};//anonymous namespace
 
 dxgi_factory2_handler::dxgi_factory2_handler() {
 #ifdef _DEBUG
@@ -55,7 +30,46 @@ dxgi_factory2_handler::dxgi_factory2_handler() {
 	assert(SUCCEEDED(hr));
 }
 
-namespace renderer {
+namespace
+{
+	namespace detail
+	{
+		struct dimension
+		{
+			const UINT width;
+			const UINT height;
+		};
+
+		dimension get_width_height(HWND wnd) {
+			RECT rc;
+			auto const r = GetClientRect(wnd, &rc);
+			assert(r);
+			const UINT width = rc.right - rc.left;
+			const UINT height = rc.bottom - rc.top;
+			return{ width, height };
+		}
+	}
+
+
+	DXGI_SWAP_CHAIN_DESC1 get_swap_chain1_desc(HWND wnd) {
+		const auto width_height = detail::get_width_height(wnd);
+		DXGI_SWAP_CHAIN_DESC1 sd;
+		ZeroMemory(&sd, sizeof(sd));
+		sd.Width = width_height.width;
+		sd.Height = width_height.height;
+		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.SampleDesc.Count = 1;
+		sd.SampleDesc.Quality = 0;
+		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		sd.BufferCount = 1;
+		return sd;
+	}
+
+};//anonymous namespace
+
+
+namespace renderer
+{
 	using namespace util;
 
 	dx11_interface_imp::dx11_interface_imp() {
@@ -76,9 +90,17 @@ namespace renderer {
 	}
 
 	bool dx11_interface_imp::create_device() {
-		
+		const auto driverTypes = make_array(D3D_DRIVER_TYPE_HARDWARE,
+			D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_REFERENCE);
+
+		const auto featureLevels = make_array(D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0);
+
 		for (const auto& driverType : driverTypes) {
-		
+
 			UINT createDeviceFlags = 0;
 #ifdef _DEBUG
 			createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -116,26 +138,16 @@ namespace renderer {
 			if (SUCCEEDED(hr))
 				return true;
 		}
+		assert(false);
 		return false;
 	}
 
 	bool dx11_interface_imp::create_swap_chain2(HWND wnd) {
 		assert(pd3dDevice);
-		
-		const auto width_height = get_width_height(wnd);
-		DXGI_SWAP_CHAIN_DESC1 sd;
-		ZeroMemory(&sd, sizeof(sd));
-		sd.Width = width_height.width;
-		sd.Height = width_height.height;
-		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
-		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		sd.BufferCount = 1;
 
+		const DXGI_SWAP_CHAIN_DESC1 sd = get_swap_chain1_desc(wnd);
 		dxgi_factory2_handler dxg_factory;
-		
-		auto hr = dxg_factory->CreateSwapChainForHwnd(
+		const auto hr = dxg_factory->CreateSwapChainForHwnd(
 			pd3dDevice.get(),
 			wnd,
 			&sd,
@@ -143,7 +155,7 @@ namespace renderer {
 			nullptr,
 			swap_chain1_.ref()
 		);
-
+		assert(hr == S_OK);
 		return hr == S_OK;
 	}
 
