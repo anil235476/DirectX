@@ -1,6 +1,6 @@
 #include "dx11_interface_imp.h"
 #include <cassert>
-#include <Dxgi1_3.h>
+#include "dxgi_factory.h"
 #include <array>
 #include <tuple>
 #include "utility/array_helper.h"
@@ -8,28 +8,7 @@
 using namespace std;
 using namespace experiment;
 
-struct dxgi_factory2_handler
-{
-	dxgi_factory2_handler();
-	IDXGIFactory2* operator->() {
-		return dxgiFactory2.get();
-	}
-	util::release_helper<IDXGIFactory2> dxgiFactory2;
-};
-
-dxgi_factory2_handler::dxgi_factory2_handler() {
-#ifdef _DEBUG
-	const int flag = DXGI_CREATE_FACTORY_DEBUG;
-#else
-	const int flag = 0;
-#endif
-	const HRESULT hr = CreateDXGIFactory2(
-		flag,
-		__uuidof(IDXGIFactory2),
-		(void**)dxgiFactory2.ref());
-	assert(SUCCEEDED(hr));
-}
-
+//#define _DXGI_FACT_2 1 //enable this to enable factory
 namespace
 {
 	namespace detail
@@ -73,17 +52,24 @@ namespace renderer
 	using namespace util;
 
 	dx11_interface_imp::dx11_interface_imp() {
+#if _DXGI_FACT_2
 		const auto r = create_device();
 		assert(r);
+#endif
 	}
 
 	bool dx11_interface_imp::initialize(HWND wnd) {
 		if (create_swap_chain2(wnd)) {
+#if _DXGI_FACT_2
 			if (create_swap_chain1()) {
+#endif
 				const auto r = create_render_target();
 				assert(r);
 				return r;
+#if _DXGI_FACT_2
 			}
+#endif
+
 		}
 		assert(false);
 		return false;
@@ -143,9 +129,11 @@ namespace renderer
 	}
 
 	bool dx11_interface_imp::create_swap_chain2(HWND wnd) {
+#if _DXGI_FACT_2
 		assert(pd3dDevice);
 
 		const DXGI_SWAP_CHAIN_DESC1 sd = get_swap_chain1_desc(wnd);
+
 		dxgi_factory2_handler dxg_factory;
 		const auto hr = dxg_factory->CreateSwapChainForHwnd(
 			pd3dDevice.get(),
@@ -157,6 +145,33 @@ namespace renderer
 		);
 		assert(hr == S_OK);
 		return hr == S_OK;
+#else
+		// Define our swap chain
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0 };
+		swapChainDesc.BufferCount = 1;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.OutputWindow = wnd;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.Windowed = true;
+
+
+		// Create the swap chain, device and device context
+		auto result = D3D11CreateDeviceAndSwapChain(
+			nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
+			nullptr, 0, D3D11_SDK_VERSION,
+			&swapChainDesc, swap_chain_.ref(),
+			pd3dDevice.ref(), nullptr, pImmediateContext.ref());
+
+		// Check for error
+		if (result != S_OK) {
+			MessageBox(nullptr, "Error creating DX11", "Error", MB_OK);
+			assert(false);
+			exit(0);
+		}
+		return true;
+#endif
+		return false;
 	}
 
 	bool dx11_interface_imp::create_swap_chain1() {
@@ -167,6 +182,7 @@ namespace renderer
 			reinterpret_cast<void**>(swap_chain_.ref())
 		);
 		return hr == S_OK;
+
 	}
 
 	bool dx11_interface_imp::create_render_target() {
@@ -186,6 +202,20 @@ namespace renderer
 				backBuffer.get(), nullptr, render_target_view_.ref());
 			assert(SUCCEEDED(hr));
 		}
+
+		assert(pImmediateContext);
+
+		pImmediateContext->OMSetRenderTargets(1, render_target_view_.ref(), nullptr);
+		// Setup the viewport
+		D3D11_VIEWPORT vp;
+		vp.Width = (FLOAT)300;
+		vp.Height = (FLOAT)200;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = 0;
+		vp.TopLeftY = 0;
+		pImmediateContext->RSSetViewports(1, &vp);
+
 		return render_target_view_.get() != nullptr;
 	}
 

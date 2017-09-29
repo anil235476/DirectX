@@ -42,9 +42,15 @@ if (test)
   add_executable(runUnitTests 
   test_project1.cpp
   ${renderer_SOURCE_DIR}/utility/array_helper.h
+  DirectX11_1_test.cxx
   )
 
   # Standard linking to gtest stuff.
   target_link_libraries(runUnitTests gtest gtest_main)
+
+  target_link_libraries(runUnitTests 
+	d3d11
+	DXGI
+	)
  
 endif()

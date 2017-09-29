@@ -11,6 +11,8 @@ set(dll_src
 	dx_interface_imp.cxx
 	dx11_interface_imp.h
 	dx11_interface_imp.cxx
+	dxgi_factory.h
+	dxgi_factory.cxx
 )
 
 add_library(directX_renderer SHARED 

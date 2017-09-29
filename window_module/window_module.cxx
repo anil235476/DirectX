@@ -12,7 +12,13 @@ LRESULT CALLBACK WinProc(HWND handle, UINT msg, WPARAM wparam, LPARAM lparam) {
 	return DefWindowProc(handle, msg, wparam, lparam);
 }
 
-
+window_module::~window_module() {
+	assert(wnd_);
+	const auto r1 = DestroyWindow(wnd_);
+	assert(r1);
+	const auto r = UnregisterClass("DirectX_Rendering", nullptr);
+	assert(r);
+}
 
 bool window_module::create_window(const int w, const int h) {
 	assert(wnd_ == nullptr);
